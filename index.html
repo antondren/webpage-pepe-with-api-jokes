@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>Pepe the frog by Anton D.</title>
+		<link rel="stylesheet" href="storage/styles.css">
+		<link rel="shortcut icon" href="storage/pepe_ico.png" type="image/x-icon">
+	</head>
+	<body>
+		<header>
+			<img class="logo" src="storage/pepe_logo.png" alt="Pepe the Frog logo">
+			<h1>Dzień doberek.</h1>
+			<h2>Teraz poprawimy humorek xd</h2>
+		</header>
+		<main>
+			<section>
+				<div class="container">
+					<div class="buttons">
+						<button id="get-joke-btn">Żarcik</button>
+						<button id="get-autor-info">O Autorze</button>
+						<button id="get-filmik">Filmik</button>
+					</div>
+					<div id="image-dragndrop-container">
+						<img src="storage/pepe_dancing.gif" alt="Animated GIF1" id="gif1">
+						<img src="storage/pepe_dancing.gif" alt="Animated GIF2" id="gif2">
+						<img src="storage/pepe_dancing.gif" alt="Animated GIF3" id="gif3">
+					</div>
+
+				</div>
+			</section>
+			<section>
+				<div class="joke-container">
+					<div class="joke">
+						<p id="joke-text"></p>
+						<img class="logo" src="storage/pepe_joke.png" alt="Pepe the Frog logo">
+						<button id="get-new-joke-btn">Dawaj nowy żart</button>
+						<button id="ok-btn">Śmieszne hahah</button>
+					</div>
+				</div>
+			</section>
+			<section>
+				<div class="popup">
+					<div class="popup-content">
+						<img src="storage/frog-svgrepo-com.svg" alt="frog-svgrepo-com" class="left-side">
+						<img src="storage/frog-svgrepo-com.svg" alt="frog-svgrepo-com" class="right-side">
+						<h2>Autor Anton Drehalo</h2>
+						<p>Projekt system poprawienia humoru dr.Pepe</p>
+						<p>Programowanie systemów webowych</p>
+						<p>Akademia WSEI</p>
+						<button id="popup-close">Dziękuję za uwagę</button>
+					</div>
+				</div>
+			</section>
+			<section>
+				<div class="filmik">
+					<div class="filmik-content">
+						<div class="video-container">
+							<video id="video" width="200" controls>
+								<source src="storage/filmik.mp4" type="video/mp4">
+							</video>
+						</div>
+						<button id="filmik-close">Ale sztos!</button>
+					</div>
+				</div>
+			</section>
+		</main>
+		<footer class="footer">
+			<svg height="90" width="190">
+				<text x="15" y="15" fill="black" transform="rotate(10 10,10)">2023 All rights reserved.</text>
+			</svg>
+		</footer>
+		<script>
+			const apiUrl = 'https://official-joke-api.appspot.com/random_joke';
+			const getJokeBtn = document.getElementById('get-joke-btn');
+			const getNewJokeBtn = document.getElementById('get-new-joke-btn');
+			const jokeContainer = document.querySelector('.joke-container');
+			const jokeText = document.getElementById('joke-text');
+			const okBtn = document.getElementById('ok-btn');
+
+			const getAutorButton = document.getElementById('get-autor-info');
+			const popup = document.querySelector('.popup');
+			const popupClose = document.getElementById('popup-close');
+
+			const getFilmik = document.getElementById('get-filmik');
+			const filmik = document.querySelector('.filmik');
+			const filmikClose = document.getElementById('filmik-close');
+			const video = document.getElementById("video");
+			
+			const imageContainer = document.getElementById('image-dragndrop-container');
+			const images = imageContainer.getElementsByTagName('img');
+			let draggedImg, mouseX, mouseY;
+
+			function onMouseMove(event) {
+				if (!draggedImg) return;
+				const x = event.clientX - mouseX;
+				const y = event.clientY - mouseY;
+				draggedImg.style.left = `${x}px`;
+				draggedImg.style.top = `${y}px`;
+			}
+
+			function onMouseUp(event) {
+				if (!draggedImg) return;
+				const x = event.clientX - mouseX;
+				const y = event.clientY - mouseY;
+				draggedImg.style.left = `${x}px`;
+				draggedImg.style.top = `${y}px`;
+				draggedImg.classList.remove('dragging');
+				draggedImg = null;
+			}
+
+			function onMouseDown(event) {
+				draggedImg = event.target;
+				mouseX = event.clientX - draggedImg.getBoundingClientRect().left;
+				mouseY = event.clientY - draggedImg.getBoundingClientRect().top;
+				draggedImg.style.position = 'fixed';
+				draggedImg.style.left = `${draggedImg.getBoundingClientRect().left}px`;
+				draggedImg.style.top = `${draggedImg.getBoundingClientRect().top}px`;
+				document.body.appendChild(draggedImg);
+				draggedImg.classList.add('dragging');
+			}
+
+			// Attach event listeners to each image
+			for (let img of images) {
+				img.addEventListener('mousedown', onMouseDown);
+			}
+
+			// Attach event listeners to the document
+			document.addEventListener('mousemove', onMouseMove);
+			document.addEventListener('mouseup', onMouseUp);
+
+
+			getFilmik.addEventListener('click', function () {
+				filmik.style.display = 'flex';
+			});
+
+			filmikClose.addEventListener('click', function () {
+				video.pause()
+				filmik.style.display = 'none';
+			});
+
+			getAutorButton.addEventListener('click', function () {
+				popup.style.display = 'flex';
+			});
+
+			popupClose.addEventListener('click', function () {
+				popup.style.display = 'none';
+			});
+
+			function showJoke(joke) {
+				jokeText.textContent = joke.setup + ' ' + joke.punchline;
+				jokeContainer.style.visibility = 'visible';
+				jokeContainer.style.opacity = 1;
+			}
+
+			function hideJoke() {
+				jokeContainer.style.visibility = 'hidden';
+				jokeContainer.style.opacity = 0;
+			}
+
+			getJokeBtn.addEventListener('click', () => {
+				fetch(apiUrl)
+					.then(response => response.json())
+					.then(data => showJoke(data))
+					.catch(error => console.log(error));
+			});
+
+			getNewJokeBtn.addEventListener('click', () => {
+				fetch(apiUrl)
+					.then(response => response.json())
+					.then(data => showJoke(data))
+					.catch(error => console.log(error));
+			});
+
+			okBtn.addEventListener('click', () => {
+				hideJoke();
+			});
+		</script>
+	</body>
+</html>
